@@ -340,7 +340,7 @@
     <div role="listitem"><strong>+33%</strong><span>average success over naive data pooling</span></div>
     <div role="listitem"><strong>50%</strong><span>success on unseen controller modes</span></div>
     <div role="listitem"><strong>52%</strong><span>success on unseen controller gains</span></div>
-    <div role="listitem"><strong>78%</strong><span>of in-domain performance kept when context is reused across tasks</span></div>
+    <div role="listitem"><strong>78–92%</strong><span>of in-domain performance kept when context is reused across tasks</span></div>
   </div>
 
 
@@ -427,9 +427,9 @@
     <div class="split" style="margin-top:2.5rem;align-items:center">
       <div style="display:grid;gap:1rem">
         <span class="q">Q4 · Does context transfer across tasks?</span>
-        <p class="figcap" style="color:var(--ink)">We encoded interaction context from <b>tool-bit insertion</b> and used it to condition <b>USB insertion</b> under the same compliant controller. The reused context reached 35% success, 78% of the 45% achieved with in-domain USB context. The policy picks up the compliant search it saw in tool-bit insertion: when it meets resistance at the port, it yields and keeps gentle surface contact while it jiggles.</p>
+        <p class="figcap" style="color:var(--ink)">We encoded interaction context from <b>tool-bit insertion</b> and used it to condition <b>USB insertion</b> under the same compliant controller. The reused context reached 35% success, 78% of the 45% achieved with in-domain USB context. Context from <b>whiteboard wiping</b> transfers to <b>pancake flipping</b> the same way: 55% success, 92% of the 60% with in-domain context. On USB, the policy picks up the compliant search it saw in tool-bit insertion: when it meets resistance at the port, it yields and keeps gentle surface contact while it jiggles.</p>
       </div>
-      <figure class="plate"><img src="assets/fig/context_reuse.png" alt="Dot plot: in-domain context 45 percent, reused context 35 percent USB insertion success; 78 percent retained." loading="lazy"></figure>
+      <figure class="plate"><img src="assets/fig/context_reuse.png" alt="Dumbbell plot of target-task success. Tool-bit to USB: in-domain context 45 percent, reused 35 percent, 78 percent retained. Wiping to flipping: in-domain 60 percent, reused 55 percent, 92 percent retained." loading="lazy"></figure>
     </div>
 
   </section>
