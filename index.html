@@ -161,7 +161,7 @@
     padding: clamp(0.5rem, 1.5vw, 1rem);
     border: 1px solid var(--rule);
   }
-  .plate img { display: block; width: 100%; max-width: 100%; height: auto; }
+  .plate img, .plate video { display: block; width: 100%; max-width: 100%; height: auto; }
   .figcap { font-size: 0.95rem; line-height: 1.5; color: var(--muted); max-width: var(--measure); margin: 0; }
   .figcap b { color: var(--ink); font-weight: 500; }
   .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.5rem; align-items: start; }
@@ -275,7 +275,7 @@
   </header>
 
   <div class="teaser">
-      <figure class="plate"><img src="assets/fig/teaser.png" alt="Method overview. (a) Demonstrations of throwing and flipping under compliant and stiff controllers go into a dataset where each demo, recorded under one controller, is relabelled for the others. An interaction history from one rollout is encoded by a Perceiver into tokens z_c, which with controller metadata condition a pi-0.5 VLA. (b) Transferring a task to a new controller: under a stiff controller the policy traces the eraser side to side, under a compliant controller it presses down." ></figure>
+      <figure class="plate"><video class="teaser-vid" src="assets/vid/teaser.mp4" poster="assets/vid/teaser.jpg" autoplay muted loop playsinline preload="auto" aria-label="Method overview. (a) Demonstrations of throwing and flipping under compliant and stiff controllers go into a dataset where each demo, recorded under one controller, is relabelled for the others. An interaction history from one rollout is encoded by a Perceiver into tokens z_c, which with controller metadata condition a pi-0.5 VLA. (b) Transferring a task to a new controller: under a stiff controller the policy traces the eraser side to side, under a compliant controller it presses down."></video></figure>
   </div>
 
   <p class="tldr">We train one robot policy that adapts to unseen controllers by conditioning on interaction history. We then show that robots can learn from data collected under many different controllers and adapt their strategy to new tasks.</p>
@@ -515,7 +515,7 @@
 <script>
   (function () {
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var vids = document.querySelectorAll(".clip video");
+    var vids = document.querySelectorAll(".clip video, .teaser-vid");
     vids.forEach(function (v) {
       if (reduce) { v.removeAttribute("autoplay"); v.pause(); v.controls = true; }
     });
