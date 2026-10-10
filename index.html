@@ -275,7 +275,7 @@
   </header>
 
   <div class="teaser">
-      <figure class="plate"><video class="teaser-vid" src="assets/vid/teaser.mp4" poster="assets/vid/teaser.jpg" autoplay muted loop playsinline preload="auto" aria-label="Method overview. (a) Demonstrations of throwing and flipping under compliant and stiff controllers go into a dataset where each demo, recorded under one controller, is relabelled for the others. An interaction history from one rollout is encoded by a Perceiver into tokens z_c, which with controller metadata condition a pi-0.5 VLA. (b) Transferring a task to a new controller: under a stiff controller the policy traces the eraser side to side, under a compliant controller it presses down."></video></figure>
+      <figure class="plate"><video class="teaser-vid" src="assets/vid/teaser.mp4" poster="assets/vid/teaser.jpg" autoplay muted playsinline preload="auto" aria-label="Method overview. (a) Demonstrations of throwing and flipping under compliant and stiff controllers go into a dataset where each demo, recorded under one controller, is relabelled for the others. An interaction history from one rollout is encoded by a Perceiver into tokens z_c, which with controller metadata condition a pi-0.5 VLA. (b) Transferring a task to a new controller: under a stiff controller the policy traces the eraser side to side, under a compliant controller it presses down."></video></figure>
   </div>
 
   <p class="tldr">We train one robot policy that adapts to unseen controllers by conditioning on interaction history. We then show that robots can learn from data collected under many different controllers and adapt their strategy to new tasks.</p>
@@ -523,7 +523,8 @@
     if (!reduce && "IntersectionObserver" in window) {
       var io = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
-          if (e.isIntersecting) { var p = e.target.play(); if (p && p.catch) p.catch(function () {}); }
+          // the teaser plays once: once it has ended, leave it on its last frame
+          if (e.isIntersecting) { if (e.target.ended) return; var p = e.target.play(); if (p && p.catch) p.catch(function () {}); }
           else e.target.pause();
         });
       }, { threshold: 0.15 });
