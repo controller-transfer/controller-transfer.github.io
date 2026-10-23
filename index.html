@@ -213,6 +213,12 @@
     gap: 0.75rem 1rem; align-items: center; max-width: 46rem; width: 100%; margin-inline: auto;
   }
   .combo-grid[hidden] { display: none; }
+  .takeaway {
+    max-width: 46rem; width: 100%; margin: 0.5rem auto 0; display: grid; gap: 0.5rem;
+    padding: 1.1rem 1.25rem; border-left: 3px solid var(--compliant); background: var(--code-bg); border-radius: 0 4px 4px 0;
+  }
+  .takeaway p { margin: 0; line-height: 1.55; }
+  .takeaway b { font-weight: 500; }
   .combo-grid .colhead { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
   .combo-grid .rowhead {
     font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase;
@@ -265,11 +271,11 @@
 <main>
   <header class="top">
     <h1>Cross-Controller Transfer via <i>In-Context</i> Behavior&nbsp;Adaptation</h1>
-    <p class="authors" style="margin:0">Anonymous Authors <span class="aff">· Under review</span></p>
+    <p class="authors" style="margin:0">Jonathan Yang, Chelsea Finn, Dorsa Sadigh <span class="aff">· Stanford University</span></p>
     <nav class="links" aria-label="Paper resources">
       <span>Paper · soon</span>
       <span>arXiv · soon</span>
-      <span>Code · soon</span>
+      <a href="https://github.com/JonathanYang0127/icl_cross_controller">Code</a>
       <a href="#bibtex">BibTeX</a>
     </nav>
   </header>
@@ -300,6 +306,7 @@
     <div class="stack">
       <div class="prose">
         <p>VR teleoperation might record compliant Cartesian commands; puppeteering might record stiff joint targets. Pool the two and the same action <i>a</i> carries two physical meanings. Large multi-robot datasets sidestep this because each controller lives in its own lab, so the scene gives it away. Once one robot runs several controllers, it doesn't.</p>
+        <p>Controllers differ along two axes. The <b style="font-weight:500">controller type</b> sets what an action means: a joint-position target, a joint velocity, an end-effector pose solved through IK, or an impedance setpoint the arm is pulled toward like a spring. The <b style="font-weight:500">gains</b> set how hard it pulls. A high proportional gain <i>K<sub>p</sub></i> makes the arm stiff: it tracks commands precisely and pushes hard against anything in its way. A low <i>K<sub>p</sub></i> makes it compliant: it lags its commands and yields on contact. The derivative gain <i>K<sub>d</sub></i> damps the motion. We use six controller types with four gain settings each, and evaluate unseen joint-impedance gains from (0.28, 0.12) to (2.44, 1.32) kN/m. Two controllers can share an action space and still need different behavior, because the gains change what happens the moment the robot touches something.</p>
         <p>The obvious fix is system identification: estimate the controller, then relabel each demonstrated command so the target controller produces the same torque. For the PD law shared by all our controllers, that remap is</p>
         <div class="eq" role="math" aria-label="q prime d equals q plus K prime inverse times the quantity K times q d minus q, plus D minus D prime times q dot d minus q dot">
           <i>q</i>′<sub><i>d</i></sub> = <i>q</i> + (<i>K</i>′)<sup>−1</sup>[ <i>K</i>(<i>q<sub>d</sub></i> − <i>q</i>) + (<i>D</i> − <i>D</i>′)(<i>q̇<sub>d</sub></i> − <i>q̇</i>) ]
@@ -351,9 +358,9 @@
       <h2>The best strategy depends on the controller</h2>
     </header>
     <div class="split narrow-fig">
-      <figure class="plate"><img src="assets/fig/strategy_gain_compatibility.png" alt="Two wiping strategies evaluated across a grid of Kp and Kd gains. The compliant strategy succeeds 80 to 90 percent at low stiffness; the stiff strategy succeeds 75 to 85 percent at high stiffness." loading="lazy"></figure>
+      <figure class="plate"><img src="assets/fig/strategy_gain_compatibility.png" alt="Two wiping strategies evaluated across a grid of Kp and Kd gains. The compliant strategy succeeds 80 to 90 percent at low stiffness; the stiff strategy succeeds 75 to 85 percent at high stiffness. Below, side-view photos show the compliant strategy sweeping the eraser through contact and the stiff strategy tracing a straight line." loading="lazy"></figure>
       <div class="prose">
-        <p>We evaluated two learned wiping strategies across the same (<i>K<sub>p</sub></i>, <i>K<sub>d</sub></i>) plane. At low stiffness, <em class="c">compliant pressing</em> reaches 80–90% while <em class="s">stiff tracing</em> manages only 15–25%. At high stiffness the order flips: stiff tracing reaches 75–85% and compliant pressing overloads under excessive contact force.</p>
+        <p>We evaluated two learned wiping strategies across the same (<i>K<sub>p</sub></i>, <i>K<sub>d</sub></i>) plane. At low stiffness, <em class="c">compliant sweeping</em> reaches 80–90% while <em class="s">stiff tracing</em> manages only 15–25%. At high stiffness the order flips: stiff tracing reaches 75–85% and compliant sweeping overloads under excessive contact force.</p>
         <p>Neither strategy wins everywhere. So identifying the gains isn't enough; the policy has to choose behavior that suits them.</p>
       </div>
     </div>
@@ -392,13 +399,21 @@
 
   <section id="rollouts">
     <header>
-      <h2>Real-world rollouts</h2>
+      <span class="label">Rollouts</span>
+      <h2>The policy adapts its strategy to the controller</h2>
     </header>
+    <div class="prose">
+      <p>Every clip is a real-world rollout of the same trained policy. Each row fixes the controller the robot runs at deployment. Each column fixes the conditioning: we encode an interaction trajectory recorded under a stiff or compliant controller and pass the resulting tokens to the policy, which then carries out the strategy that context implies. On the diagonal the context matches the controller; off the diagonal it comes from the other one.</p>
+    </div>
     <div class="combos">
       <div class="tabs" role="tablist" aria-label="Task"></div>
       <div class="combo-panels"></div>
-      <p class="figcap">Each grid crosses the controller the robot runs (rows) with the strategy it uses (columns). The strategy that matches the controller succeeds; the mismatched one fails. Inset: wrist camera.</p>
+      <p class="figcap">Rows: deployment controller. Columns: the controller the encoded context trajectory was recorded under, which sets the strategy. Inset: wrist camera.</p>
     </div>
+    <aside class="takeaway" aria-label="Key takeaway">
+      <span class="label">Key takeaway</span>
+      <p><b>The policy changes its strategy, not just its actions, to match the controller.</b> On whiteboard wiping, compliant context makes it press down into the board, while stiff context makes it trace lightly across the surface. It succeeds far more often when the context matches the deployment controller, as you would expect. In the mismatched cells it still faithfully carries out the strategy the context implies, even though that strategy is wrong for the arm it is on. That is the evidence the policy is reading its conditioning instead of ignoring it.</p>
+    </aside>
   </section>
 
   <section id="results">
@@ -438,9 +453,9 @@
     <header><span class="label">Citation</span></header>
     <div class="bib">
       <button type="button" id="copy-bib">Copy</button>
-<pre id="bib-text">@article{anonymous2026crosscontroller,
+<pre id="bib-text">@article{yang2026crosscontroller,
   title   = {Cross-Controller Transfer via In-Context Behavior Adaptation},
-  author  = {Anonymous},
+  author  = {Yang, Jonathan and Finn, Chelsea and Sadigh, Dorsa},
   year    = {2026}
 }</pre>
     </div>
