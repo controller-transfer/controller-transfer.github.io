@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="color-scheme" content="light only">
 <title>Cross-Controller Transfer</title>
 <meta name="description" content="A generalist robot policy that adapts its manipulation strategy to unseen controllers by conditioning on interaction history.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -6,6 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   :root {
+    color-scheme: light;
     --ground: #fbfbfa;
     --ink: #17202d;
     --muted: #5a6371;
@@ -18,30 +20,6 @@
     --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
     --measure: 40rem;
     --wide: 68rem;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --ground: #10151d;
-      --ink: #e6e9ee;
-      --muted: #9aa3b1;
-      --rule: #273040;
-      --compliant: #8fb0e3;
-      --stiff: #f0905a;
-      --plate: #ffffff;
-      --code-bg: #182030;
-    }
-  }
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --ground: #10151d;
-    --ink: #e6e9ee;
-    --muted: #9aa3b1;
-    --rule: #273040;
-    --compliant: #8fb0e3;
-    --stiff: #f0905a;
-    --plate: #ffffff;
-    --code-bg: #182030;
   }
 
   * { box-sizing: border-box; }
@@ -273,8 +251,8 @@
     <h1>Cross-Controller Transfer via <i>In-Context</i> Behavior&nbsp;Adaptation</h1>
     <p class="authors" style="margin:0">Jonathan Yang, Chelsea Finn, Dorsa Sadigh <span class="aff">· Stanford University</span></p>
     <nav class="links" aria-label="Paper resources">
-      <span>Paper · soon</span>
-      <span>arXiv · soon</span>
+      <a href="https://arxiv.org/pdf/2610.39280">Paper</a>
+      <a href="https://arxiv.org/abs/2610.39280">arXiv</a>
       <a href="https://github.com/JonathanYang0127/icl_cross_controller">Code</a>
       <a href="#bibtex">BibTeX</a>
     </nav>
@@ -454,9 +432,14 @@
     <div class="bib">
       <button type="button" id="copy-bib">Copy</button>
 <pre id="bib-text">@article{yang2026crosscontroller,
-  title   = {Cross-Controller Transfer via In-Context Behavior Adaptation},
-  author  = {Yang, Jonathan and Finn, Chelsea and Sadigh, Dorsa},
-  year    = {2026}
+  title         = {Cross-Controller Transfer via In-Context Behavior Adaptation},
+  author        = {Yang, Jonathan and Finn, Chelsea and Sadigh, Dorsa},
+  journal       = {arXiv preprint arXiv:2610.39280},
+  year          = {2026},
+  eprint        = {2610.39280},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.RO},
+  url           = {https://arxiv.org/abs/2610.39280}
 }</pre>
     </div>
   </section>
