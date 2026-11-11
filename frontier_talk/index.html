@@ -124,9 +124,11 @@
       const urls = {};
       const blobUrl = (p, data, type) => (urls[p] = URL.createObjectURL(new Blob([data], { type })));
 
-      // 1 · binary files (assets, fonts) straight to object URLs
+      // deck code whose own references need rewriting; everything else is used as-is
+      const CODE = ["styles.css", "katex.css", "deck.js", "action-slide.js"];
+      // 1 · assets, fonts and vendored scripts straight to object URLs
       for (const [p, f] of Object.entries(files)) {
-        if (!/\.(html|css|js)$/.test(p)) blobUrl(p, f.bytes, f.type);
+        if (p !== "index.html" && p !== "fonts/fonts.css" && !CODE.includes(p)) blobUrl(p, f.bytes, f.type);
       }
       // 2 · text files with their own references rewritten
       const ref = /(["'(])((?:assets|fonts)\/[^"')?#\s]+|[A-Za-z0-9_-]+\.woff2)(\?v=\d+)?/g;
@@ -135,7 +137,7 @@
         return key ? q + urls[key] : m;
       });
       blobUrl("fonts/fonts.css", rewrite(text("fonts/fonts.css"), "fonts/"), "text/css");
-      for (const p of ["styles.css", "deck.js", "action-slide.js"]) blobUrl(p, rewrite(text(p)), files[p].type);
+      for (const p of CODE) blobUrl(p, rewrite(text(p)), files[p].type);
       // 3 · the deck page itself
       const html = text("index.html")
         .replace(/((?:src|href|poster)=")([^"#:]+?)(\?v=\d+)?"/g, (m, a, p) => (urls[p] ? `${a}${urls[p]}"` : m));
