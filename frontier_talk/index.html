@@ -137,7 +137,7 @@
         return key ? q + urls[key] : m;
       });
       blobUrl("fonts/fonts.css", rewrite(text("fonts/fonts.css"), "fonts/"), "text/css");
-      for (const p of CODE) blobUrl(p, rewrite(text(p)), files[p].type);
+      for (const p of CODE) if (files[p]) blobUrl(p, rewrite(text(p)), files[p].type);
       // 3 · the deck page itself
       const html = text("index.html")
         .replace(/((?:src|href|poster)=")([^"#:]+?)(\?v=\d+)?"/g, (m, a, p) => (urls[p] ? `${a}${urls[p]}"` : m));
