@@ -125,7 +125,7 @@
       const blobUrl = (p, data, type) => (urls[p] = URL.createObjectURL(new Blob([data], { type })));
 
       // deck code whose own references need rewriting; everything else is used as-is
-      const CODE = ["styles.css", "katex.css", "deck.js", "action-slide.js"];
+      const CODE = ["styles.css", "deck.js", "action-slide.js"];
       // 1 · assets, fonts and vendored scripts straight to object URLs
       for (const [p, f] of Object.entries(files)) {
         if (p !== "index.html" && p !== "fonts/fonts.css" && !CODE.includes(p)) blobUrl(p, f.bytes, f.type);
