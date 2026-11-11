@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Cross-Controller Transfer</title>
+  <style>
+    :root { --cardinal: #8c1515; --ink: #2e2d29; --muted: #7f7776; --rule: #dad7cb; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      background: #fff;
+      color: var(--ink);
+      font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+    main { display: grid; place-content: center; gap: 18px; padding: 24px 16px; }
+    h1 {
+      margin: 0;
+      padding-left: 16px;
+      border-left: 5px solid var(--cardinal);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(26px, 4vw, 44px);
+      font-weight: 600;
+      line-height: 1.15;
+    }
+    form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    input {
+      flex: 1 1 240px;
+      padding: 12px 14px;
+      border: 1px solid #b6b1a9;
+      border-radius: 6px;
+      font: inherit;
+      font-size: 17px;
+    }
+    input:focus { outline: 2px solid var(--cardinal); outline-offset: 1px; border-color: transparent; }
+    button {
+      padding: 12px 22px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--cardinal);
+      color: #fff;
+      font: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: progress; }
+    #status { min-height: 1.4em; margin: 0; color: var(--muted); font-size: 15px; }
+    #status.err { color: var(--cardinal); font-weight: 700; }
+    footer { height: 56px; background: var(--cardinal); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Cross-Controller Transfer via <em>In-Context</em> Behavior Adaptation</h1>
+    <form id="f" autocomplete="off">
+      <input id="pw" type="password" placeholder="Password" aria-label="Password" autofocus required>
+      <button id="go" type="submit">Open talk</button>
+    </form>
+    <p id="status" role="status"></p>
+  </main>
+  <footer></footer>
+
+  <script>
+  (() => {
+    const ITERATIONS = 600000;
+    const statusEl = document.getElementById("status");
+    const form = document.getElementById("f");
+    const input = document.getElementById("pw");
+    const button = document.getElementById("go");
+    const say = (msg, err = false) => { statusEl.textContent = msg; statusEl.classList.toggle("err", err); };
+
+    // Start downloading the encrypted bundle right away, with progress.
+    let downloaded = null;
+    const download = (async () => {
+      const res = await fetch("deck.bin", { cache: "no-cache" });
+      if (!res.ok) throw new Error(`download failed (${res.status})`);
+      const total = Number(res.headers.get("content-length")) || 0;
+      const reader = res.body.getReader();
+      const chunks = [];
+      let got = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        got += value.length;
+        if (total && !downloaded) say(`Loading deck… ${Math.round((100 * got) / total)}%`);
+      }
+      const buf = new Uint8Array(got);
+      let o = 0;
+      for (const c of chunks) { buf.set(c, o); o += c.length; }
+      downloaded = buf;
+      if (!statusEl.classList.contains("err")) say("Ready.");
+      return buf;
+    })();
+
+    async function decrypt(bin, password) {
+      const magic = new TextDecoder().decode(bin.subarray(0, 4));
+      if (magic !== "FTK1") throw new Error("unexpected file format");
+      const salt = bin.subarray(4, 20);
+      const iv = bin.subarray(20, 32);
+      const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+      const key = await crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt, iterations: ITERATIONS, hash: "SHA-256" },
+        base, { name: "AES-GCM", length: 256 }, false, ["decrypt"],
+      );
+      return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, bin.subarray(32)));
+    }
+
+    function unpack(plain) {
+      const len = new DataView(plain.buffer, plain.byteOffset, 4).getUint32(0, true);
+      const header = JSON.parse(new TextDecoder().decode(plain.subarray(4, 4 + len)));
+      const base = 4 + len;
+      const files = {};
+      for (const e of header) files[e.path] = { type: e.type, bytes: plain.subarray(base + e.offset, base + e.offset + e.length) };
+      return files;
+    }
+
+    function launch(files) {
+      const text = (p) => new TextDecoder().decode(files[p].bytes);
+      const urls = {};
+      const blobUrl = (p, data, type) => (urls[p] = URL.createObjectURL(new Blob([data], { type })));
+
+      // 1 · binary files (assets, fonts) straight to object URLs
+      for (const [p, f] of Object.entries(files)) {
+        if (!/\.(html|css|js)$/.test(p)) blobUrl(p, f.bytes, f.type);
+      }
+      // 2 · text files with their own references rewritten
+      const ref = /(["'(])((?:assets|fonts)\/[^"')?#\s]+|[A-Za-z0-9_-]+\.woff2)(\?v=\d+)?/g;
+      const rewrite = (src, dir = "") => src.replace(ref, (m, q, p) => {
+        const key = urls[p] ? p : urls[dir + p] ? dir + p : null;
+        return key ? q + urls[key] : m;
+      });
+      blobUrl("fonts/fonts.css", rewrite(text("fonts/fonts.css"), "fonts/"), "text/css");
+      for (const p of ["styles.css", "deck.js", "action-slide.js"]) blobUrl(p, rewrite(text(p)), files[p].type);
+      // 3 · the deck page itself
+      const html = text("index.html")
+        .replace(/((?:src|href|poster)=")([^"#:]+?)(\?v=\d+)?"/g, (m, a, p) => (urls[p] ? `${a}${urls[p]}"` : m));
+      document.open();
+      document.write(html);
+      document.close();
+    }
+
+    async function open(password) {
+      button.disabled = true;
+      try {
+        say(downloaded ? "Decrypting…" : statusEl.textContent || "Loading deck…");
+        const bin = await download;
+        say("Decrypting…");
+        let plain;
+        try {
+          plain = await decrypt(bin, password);
+        } catch {
+          try { sessionStorage.removeItem("ftk-pw"); } catch {}
+          say("Wrong password.", true);
+          button.disabled = false;
+          input.select();
+          return;
+        }
+        try { sessionStorage.setItem("ftk-pw", password); } catch {}
+        launch(unpack(plain));
+      } catch (e) {
+        say(`Could not open the deck: ${e.message}`, true);
+        button.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", (e) => { e.preventDefault(); open(input.value); });
+    let saved = null;
+    try { saved = sessionStorage.getItem("ftk-pw"); } catch {}
+    if (saved) open(saved);
+    download.catch((e) => say(`Could not load the deck: ${e.message}`, true));
+  })();
+  </script>
+</body>
+</html>
